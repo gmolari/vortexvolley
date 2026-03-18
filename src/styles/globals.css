@@ -101,3 +101,24 @@ body {
 html {
   scroll-behavior: smooth;
 }
+
+/* Dialog backdrop animation */
+dialog::backdrop {
+  transition: opacity 200ms ease-out;
+}
+
+dialog[open]::backdrop {
+  opacity: 1;
+}
+
+/* Smooth transitions for interactive elements */
+button, a, [role="button"] {
+  transition-property: color, background-color, border-color, opacity, transform;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out;
+}
+
+/* Select focus animation */
+select:focus {
+  transition: box-shadow 150ms ease-out, border-color 150ms ease-out;
+}

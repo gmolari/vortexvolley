@@ -6,12 +6,16 @@ import { eq } from "drizzle-orm";
 import { hash } from "bcryptjs";
 
 export async function createUser(data: {
-  fullName: string;
   username: string;
-  email: string;
   password: string;
-  phone: string;
-  birthDate: string;
+  firstName: string;
+  lastName: string;
+  nickname?: string;
+  avatarUrl?: string;
+  cargo?: string;
+  email?: string;
+  phone?: string;
+  birthDate?: string;
   role?: "MEMBER" | "ADMIN" | "OWNER";
 }) {
   const hashedPassword = await hash(data.password, 12);
@@ -24,6 +28,28 @@ export async function createUser(data: {
     })
     .returning();
 
+  const { password: _, ...userWithoutPassword } = user;
+  return userWithoutPassword;
+}
+
+export async function updateUser(
+  id: string,
+  data: {
+    firstName?: string;
+    lastName?: string;
+    nickname?: string;
+    avatarUrl?: string;
+    cargo?: string;
+    email?: string;
+    phone?: string;
+    role?: "MEMBER" | "ADMIN" | "OWNER";
+  }
+) {
+  const [user] = await db
+    .update(users)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(users.id, id))
+    .returning();
   const { password: _, ...userWithoutPassword } = user;
   return userWithoutPassword;
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X, Sun, Moon, ShoppingBag } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -16,6 +17,8 @@ const navLinks = [
 export function Header() {
   const [open, setOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+  const { data: session } = useSession();
+  const adminHref = session?.user ? "/admin/dashboard" : "/login";
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
@@ -42,12 +45,18 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <Link
+            href={adminHref}
+            className="hidden rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground md:inline-flex"
+          >
+            Admin
+          </Link>
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="rounded-md p-2 text-muted-foreground transition-colors hover:text-foreground"
+            className="relative rounded-md p-2 text-muted-foreground transition-colors hover:text-foreground"
           >
             <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <Moon className="absolute left-2 top-2 h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
             <span className="sr-only">Alternar tema</span>
           </button>
 
@@ -73,6 +82,13 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
+            <Link
+              href={adminHref}
+              onClick={() => setOpen(false)}
+              className="rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Admin
+            </Link>
           </nav>
         </div>
       )}

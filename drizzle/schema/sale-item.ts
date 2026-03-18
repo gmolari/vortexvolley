@@ -8,6 +8,7 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import { saleItemStatusEnum } from "./enums/sale-item-status.enum";
 import { saleItemImages } from "./sale-item-image";
 import { saleItemFields } from "./sale-item-field";
 import { orders } from "./order";
@@ -21,6 +22,9 @@ export const saleItems = pgTable("sale_items", {
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
   estimatedDelivery: varchar("estimated_delivery", { length: 100 }),
   notificationEmail: varchar("notification_email", { length: 255 }),
+  status: saleItemStatusEnum("status").notNull().default("DRAFT"),
+  startsAt: timestamp("starts_at"),
+  expiresAt: timestamp("expires_at"),
   active: boolean("active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

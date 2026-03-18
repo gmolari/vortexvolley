@@ -8,6 +8,17 @@ export function BannerSection({ items }: BannerSectionProps) {
   const item = items[0];
   if (!item) return null;
 
+  const imageOnly = item.imageUrl && !item.title;
+
+  if (imageOnly) {
+    const img = (
+      <div className="overflow-hidden rounded-2xl">
+        <img src={item.imageUrl!} alt="" className="w-full object-cover" />
+      </div>
+    );
+    return item.linkUrl ? <a href={item.linkUrl}>{img}</a> : img;
+  }
+
   return (
     <div
       className="relative flex min-h-[300px] items-center justify-center overflow-hidden rounded-2xl bg-muted"
@@ -16,7 +27,7 @@ export function BannerSection({ items }: BannerSectionProps) {
       <div className="absolute inset-0 bg-black/50" />
       <div className="relative z-10 text-center text-white p-8">
         <h3 className="text-3xl font-bold">{item.title}</h3>
-        {item.description && <p className="mt-3 max-w-xl mx-auto text-white/80">{item.description}</p>}
+        {item.description && <div className="mt-3 max-w-xl mx-auto text-white/80 [&_p]:m-0" dangerouslySetInnerHTML={{ __html: item.description }} />}
         {item.linkUrl && (
           <a
             href={item.linkUrl}

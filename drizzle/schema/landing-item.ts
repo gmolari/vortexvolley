@@ -16,7 +16,7 @@ export const landingItems = pgTable("landing_items", {
   sectionId: uuid("section_id")
     .notNull()
     .references(() => landingSections.id, { onDelete: "cascade" }),
-  title: varchar("title", { length: 255 }).notNull(),
+  title: varchar("title", { length: 255 }).default(""),
   description: text("description"),
   imageUrl: varchar("image_url", { length: 500 }),
   linkUrl: varchar("link_url", { length: 500 }),

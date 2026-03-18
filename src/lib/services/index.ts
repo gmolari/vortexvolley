@@ -5,3 +5,4 @@ export * from "./email.service";
 export * from "./settings.service";
 export * from "./copafacil.service";
 export * from "./user.service";
+export * from "./audit-log.service";

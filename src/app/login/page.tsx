@@ -1,25 +1,33 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Button, Input, FormField, Spinner } from "@/components/ui";
 
 interface LoginForm {
-  email: string;
+  username: string;
   password: string;
 }
 
 export default function LoginPage() {
   const router = useRouter();
+  const { status } = useSession();
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace("/admin/dashboard");
+    }
+  }, [status, router]);
+
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>();
 
   const onSubmit = async (data: LoginForm) => {
     setError("");
     const result = await signIn("credentials", {
-      email: data.email,
+      username: data.username,
       password: data.password,
       redirect: false,
     });
@@ -31,8 +39,16 @@ export default function LoginPage() {
     }
   };
 
+  if (status === "loading" || status === "authenticated") {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/5 via-background to-primary/10 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-primary/5 via-background to-primary/10 px-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-extrabold">
@@ -51,11 +67,10 @@ export default function LoginPage() {
             </div>
           )}
 
-          <FormField label="Email" required error={errors.email?.message}>
+          <FormField label="Usuário" required error={errors.username?.message}>
             <Input
-              type="email"
-              {...register("email", { required: "Email obrigatório" })}
-              placeholder="admin@vortexvolley.com"
+              {...register("username", { required: "Usuário obrigatório" })}
+              placeholder="admin"
             />
           </FormField>
 

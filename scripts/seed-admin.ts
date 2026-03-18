@@ -3,32 +3,32 @@ import { users } from "../drizzle/schema";
 import { hash } from "bcryptjs";
 
 async function seedAdmin() {
-  const email = "admin@vortexvolley.com";
+  const username = "admin";
   const password = "admin123";
 
   const existing = await db.query.users.findFirst({
-    where: (u, { eq }) => eq(u.email, email),
+    where: (u, { eq }) => eq(u.username, username),
   });
 
   if (existing) {
-    console.log("Admin já existe:", email);
+    console.log("Admin já existe:", username);
     process.exit(0);
   }
 
   const hashedPassword = await hash(password, 12);
 
   await db.insert(users).values({
-    fullName: "Admin Vortex",
-    username: "admin",
-    email,
+    username,
     password: hashedPassword,
-    phone: "43999999999",
-    birthDate: "1990-01-01",
+    firstName: "Admin",
+    lastName: "Vortex",
+    nickname: "admin",
+    cargo: "Administrador",
     role: "ADMIN",
   });
 
   console.log("Admin criado com sucesso!");
-  console.log(`Email: ${email}`);
+  console.log(`Usuário: ${username}`);
   console.log(`Senha: ${password}`);
   process.exit(0);
 }

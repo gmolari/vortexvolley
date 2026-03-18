@@ -7,7 +7,7 @@ import {
   saleItemFields,
   saleItemFieldOptions,
 } from "@/../drizzle/schema";
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, and, inArray } from "drizzle-orm";
 import { slugify } from "@/lib/utils";
 
 export async function getSaleItems() {
@@ -19,7 +19,10 @@ export async function getSaleItems() {
 
 export async function getActiveSaleItems() {
   return db.query.saleItems.findMany({
-    where: eq(saleItems.active, true),
+    where: and(
+      eq(saleItems.active, true),
+      inArray(saleItems.status, ["ACTIVE", "EXPIRED", "NEAR"])
+    ),
     orderBy: [asc(saleItems.name)],
     with: { images: { orderBy: [asc(saleItemImages.order)] } },
   });
@@ -57,17 +60,24 @@ export async function createSaleItem(data: {
   price: number;
   estimatedDelivery?: string;
   notificationEmail?: string;
+  status?: "ACTIVE" | "INACTIVE" | "EXPIRED" | "NEAR" | "DRAFT";
+  startsAt?: string;
+  expiresAt?: string;
   active?: boolean;
 }) {
   const slug = slugify(data.name);
   const [item] = await db
     .insert(saleItems)
     .values({
-      ...data,
+      name: data.name,
       slug,
+      description: data.description,
       price: String(data.price),
       notificationEmail: data.notificationEmail || null,
       estimatedDelivery: data.estimatedDelivery || null,
+      status: data.status || "DRAFT",
+      startsAt: data.startsAt ? new Date(data.startsAt) : null,
+      expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
       active: data.active ?? true,
     })
     .returning();
@@ -78,6 +88,8 @@ export async function updateSaleItem(id: string, data: Record<string, unknown>) 
   const values: Record<string, unknown> = { ...data, updatedAt: new Date() };
   if (typeof data.name === "string") values.slug = slugify(data.name);
   if (data.price !== undefined) values.price = String(data.price);
+  if (typeof data.startsAt === "string") values.startsAt = data.startsAt ? new Date(data.startsAt as string) : null;
+  if (typeof data.expiresAt === "string") values.expiresAt = data.expiresAt ? new Date(data.expiresAt as string) : null;
   const [item] = await db
     .update(saleItems)
     .set(values)

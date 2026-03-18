@@ -5,7 +5,7 @@ import {
   landingSections,
   landingItems,
 } from "@/../drizzle/schema";
-import { eq, asc, and } from "drizzle-orm";
+import { eq, asc, and, inArray } from "drizzle-orm";
 import { slugify } from "@/lib/utils";
 
 export async function getSections() {
@@ -21,7 +21,10 @@ export async function getSections() {
 
 export async function getVisibleSections() {
   return db.query.landingSections.findMany({
-    where: eq(landingSections.visible, true),
+    where: and(
+      eq(landingSections.visible, true),
+      eq(landingSections.status, "ACTIVE")
+    ),
     orderBy: [asc(landingSections.order)],
     with: {
       items: {
@@ -34,14 +37,26 @@ export async function getVisibleSections() {
 
 export async function createSection(data: {
   title: string;
+  description?: string;
   layout: "CAROUSEL" | "GRID" | "HIGHLIGHT" | "BANNER" | "TEXT";
+  status?: "ACTIVE" | "INACTIVE" | "DRAFT";
+  config?: Record<string, unknown> | null;
   order?: number;
   visible?: boolean;
 }) {
   const slug = slugify(data.title);
   const [section] = await db
     .insert(landingSections)
-    .values({ ...data, slug, order: data.order ?? 0, visible: data.visible ?? true })
+    .values({
+      title: data.title,
+      slug,
+      description: data.description || null,
+      layout: data.layout,
+      status: data.status || "DRAFT",
+      config: data.config || null,
+      order: data.order ?? 0,
+      visible: data.visible ?? true,
+    })
     .returning();
   return section;
 }

@@ -24,10 +24,10 @@ export function AdminHeader({ title }: AdminHeaderProps) {
       <div className="ml-auto flex items-center gap-2">
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="rounded-md p-2 text-muted-foreground transition-colors hover:text-foreground"
+          className="relative rounded-md p-2 text-muted-foreground transition-colors hover:text-foreground"
         >
           <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <Moon className="absolute left-2 top-2 h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
         </button>
       </div>
     </header>

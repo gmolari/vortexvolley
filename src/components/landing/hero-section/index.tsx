@@ -5,7 +5,7 @@ export function HeroSection() {
   return (
     <section
       id="inicio"
-      className="relative flex min-h-[90vh] items-center overflow-hidden bg-gradient-to-br from-primary/5 via-background to-primary/10"
+      className="relative flex min-h-[90vh] items-center overflow-hidden bg-linear-to-br from-primary/5 via-background to-primary/10"
     >
       {/* Decorative volleyball pattern */}
       <div className="absolute inset-0 opacity-[0.03]" style={{
@@ -23,7 +23,7 @@ export function HeroSection() {
           <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl lg:text-8xl">
             <span className="text-foreground">VORTEX</span>
             <br />
-            <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent">
               VOLLEY
             </span>
           </h1>

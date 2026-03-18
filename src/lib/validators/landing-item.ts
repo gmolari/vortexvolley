@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const createLandingItemSchema = z.object({
   sectionId: z.string().uuid(),
-  title: z.string().min(2, "Título deve ter pelo menos 2 caracteres"),
+  title: z.string().optional().default(""),
   description: z.string().optional(),
   imageUrl: z.string().url("URL inválida").optional().or(z.literal("")),
   linkUrl: z.string().url("URL inválida").optional().or(z.literal("")),

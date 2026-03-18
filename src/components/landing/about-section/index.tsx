@@ -37,7 +37,7 @@ export function AboutSection() {
           </p>
         </div>
         <div className="flex items-center justify-center">
-          <div className="relative h-72 w-72 rounded-2xl border border-border/50 bg-gradient-to-br from-primary/10 to-primary/5 p-8 flex items-center justify-center">
+          <div className="relative h-72 w-72 rounded-2xl border border-border/50 bg-linear-to-br from-primary/10 to-primary/5 p-8 flex items-center justify-center">
             <span className="text-7xl font-extrabold text-primary/20">V</span>
             <div className="absolute -bottom-3 -right-3 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground">
               120+ Atletas

@@ -8,6 +8,8 @@ export type FieldType =
   | "PHONE"
   | "SIZE";
 
+export type SaleItemStatus = "ACTIVE" | "INACTIVE" | "EXPIRED" | "NEAR" | "DRAFT";
+
 export interface SaleItem {
   id: string;
   name: string;
@@ -16,6 +18,9 @@ export interface SaleItem {
   price: string;
   estimatedDelivery: string | null;
   notificationEmail: string | null;
+  status: SaleItemStatus;
+  startsAt: Date | null;
+  expiresAt: Date | null;
   active: boolean;
   createdAt: Date;
   updatedAt: Date;

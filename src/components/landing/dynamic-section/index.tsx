@@ -13,12 +13,20 @@ interface DynamicSectionProps {
 export function DynamicSection({ section }: DynamicSectionProps) {
   if (section.items.length === 0) return null;
 
+  const config = section.config;
+
   const inner = (() => {
     switch (section.layout) {
       case "CAROUSEL":
-        return <CarouselSection items={section.items} />;
+        return (
+          <CarouselSection
+            items={section.items}
+            itemsPerSlide={(config?.itemsPerSlide as 1 | 2 | 3 | 4) || 3}
+            autoplayDelay={(config?.autoplayDelay as number) || 5000}
+          />
+        );
       case "GRID":
-        return <GridSection items={section.items} />;
+        return <GridSection items={section.items} config={config} />;
       case "HIGHLIGHT":
         return <HighlightSection items={section.items} />;
       case "BANNER":
@@ -26,7 +34,7 @@ export function DynamicSection({ section }: DynamicSectionProps) {
       case "TEXT":
         return <TextSection items={section.items} />;
       default:
-        return <GridSection items={section.items} />;
+        return <GridSection items={section.items} config={config} />;
     }
   })();
 
