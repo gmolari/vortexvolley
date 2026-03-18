@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,23 +30,50 @@ interface InlineStatusSelectProps {
 
 export function InlineStatusSelect({ value, options, onChange, disabled }: InlineStatusSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+
+  const updatePosition = useCallback(() => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setPos({
+        top: rect.bottom + 4,
+        left: rect.left,
+      });
+    }
+  }, []);
 
   useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+    if (!isOpen) return;
+    updatePosition();
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (
+        buttonRef.current && !buttonRef.current.contains(target) &&
+        dropdownRef.current && !dropdownRef.current.contains(target)
+      ) {
         setIsOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+
+    const handleScroll = () => setIsOpen(false);
+
+    document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("scroll", handleScroll, true);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("scroll", handleScroll, true);
+    };
+  }, [isOpen, updatePosition]);
 
   const style = statusStyles[value] || statusStyles.DRAFT;
 
   return (
-    <div ref={ref} className="relative inline-block">
+    <>
       <button
+        ref={buttonRef}
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
@@ -62,35 +90,34 @@ export function InlineStatusSelect({ value, options, onChange, disabled }: Inlin
         <ChevronDown className={cn("h-3 w-3 transition-transform", isOpen && "rotate-180")} />
       </button>
 
-      <div
-        className={cn(
-          "absolute left-0 top-full z-50 mt-1 min-w-[140px] rounded-lg border border-border bg-card py-1 shadow-lg",
-          "transition-all duration-150 origin-top",
-          isOpen
-            ? "scale-100 opacity-100 translate-y-0"
-            : "scale-95 opacity-0 -translate-y-1 pointer-events-none"
-        )}
-      >
-        {options.map((opt) => {
-          const optStyle = statusStyles[opt] || statusStyles.DRAFT;
-          return (
-            <button
-              key={opt}
-              type="button"
-              onClick={() => { onChange(opt); setIsOpen(false); }}
-              className={cn(
-                "flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium transition-colors",
-                "hover:bg-accent",
-                opt === value ? optStyle.text : "text-foreground"
-              )}
-            >
-              <span className={cn("h-1.5 w-1.5 rounded-full", optStyle.dot)} />
-              {statusLabels[opt] || opt}
-              {opt === value && <span className="ml-auto text-[10px] text-muted-foreground">atual</span>}
-            </button>
-          );
-        })}
-      </div>
-    </div>
+      {isOpen && createPortal(
+        <div
+          ref={dropdownRef}
+          style={{ position: "fixed", top: pos.top, left: pos.left, zIndex: 9999 }}
+          className="min-w-[140px] rounded-lg border border-border bg-card py-1 shadow-lg animate-in fade-in-0 zoom-in-95 duration-150"
+        >
+          {options.map((opt) => {
+            const optStyle = statusStyles[opt] || statusStyles.DRAFT;
+            return (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => { onChange(opt); setIsOpen(false); }}
+                className={cn(
+                  "flex w-full items-center gap-2 px-3 py-1.5 text-xs font-medium transition-colors",
+                  "hover:bg-accent",
+                  opt === value ? optStyle.text : "text-foreground"
+                )}
+              >
+                <span className={cn("h-1.5 w-1.5 rounded-full", optStyle.dot)} />
+                {statusLabels[opt] || opt}
+                {opt === value && <span className="ml-auto text-[10px] text-muted-foreground">atual</span>}
+              </button>
+            );
+          })}
+        </div>,
+        document.body
+      )}
+    </>
   );
 }
