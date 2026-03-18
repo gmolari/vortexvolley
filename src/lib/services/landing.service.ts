@@ -7,6 +7,8 @@ import {
 } from "@/../drizzle/schema";
 import { eq, asc, and, inArray } from "drizzle-orm";
 import { slugify } from "@/lib/utils";
+import { createAuditLog } from "./audit-log.service";
+import { auth } from "@/lib/auth";
 
 export async function getSections() {
   return db.query.landingSections.findMany({
@@ -58,6 +60,19 @@ export async function createSection(data: {
       visible: data.visible ?? true,
     })
     .returning();
+
+  const session = await auth();
+  if (session?.user) {
+    createAuditLog({
+      userId: session.user.id,
+      username: session.user.name || "admin",
+      action: "CREATE",
+      entity: "landing_section",
+      entityId: section.id,
+      details: { title: data.title, layout: data.layout },
+    }).catch(() => {});
+  }
+
   return section;
 }
 
@@ -74,6 +89,17 @@ export async function updateSection(id: string, data: Record<string, unknown>) {
 
 export async function deleteSection(id: string) {
   await db.delete(landingSections).where(eq(landingSections.id, id));
+
+  const session = await auth();
+  if (session?.user) {
+    createAuditLog({
+      userId: session.user.id,
+      username: session.user.name || "admin",
+      action: "DELETE",
+      entity: "landing_section",
+      entityId: id,
+    }).catch(() => {});
+  }
 }
 
 export async function reorderSections(orderedIds: string[]) {

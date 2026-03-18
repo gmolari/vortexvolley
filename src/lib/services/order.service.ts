@@ -10,6 +10,8 @@ import {
 import { eq, desc, and, like, sql } from "drizzle-orm";
 import { sendOrderNotification } from "./email.service";
 import { getSetting } from "./settings.service";
+import { createAuditLog } from "./audit-log.service";
+import { auth } from "@/lib/auth";
 
 export async function createOrder(data: {
   saleItemId: string;
@@ -142,14 +144,45 @@ export async function getOrdersBySaleItem(saleItemId: string) {
 
 export async function updateOrderStatus(
   id: string,
-  status: "PENDING" | "CONFIRMED" | "CANCELLED"
+  status: "PENDING" | "CONFIRMED" | "DELIVERED" | "CANCELLED"
 ) {
   const [order] = await db
     .update(orders)
     .set({ status, updatedAt: new Date() })
     .where(eq(orders.id, id))
     .returning();
+
+  const session = await auth();
+  if (session?.user) {
+    createAuditLog({
+      userId: session.user.id,
+      username: session.user.name || "admin",
+      action: "UPDATE_STATUS",
+      entity: "order",
+      entityId: id,
+      details: { status },
+    }).catch(() => {});
+  }
+
   return order;
+}
+
+export async function deleteOrder(id: string) {
+  const existing = await db.query.orders.findFirst({ where: eq(orders.id, id) });
+  await db.delete(orderValues).where(eq(orderValues.orderId, id));
+  await db.delete(orders).where(eq(orders.id, id));
+
+  const session = await auth();
+  if (session?.user) {
+    createAuditLog({
+      userId: session.user.id,
+      username: session.user.name || "admin",
+      action: "DELETE",
+      entity: "order",
+      entityId: id,
+      details: existing ? { customerName: existing.customerName } : undefined,
+    }).catch(() => {});
+  }
 }
 
 export async function getOrdersForExport(saleItemId?: string) {

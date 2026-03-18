@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 const actionLabels: Record<string, { label: string; color: string }> = {
   CREATE: { label: "Criou", color: "bg-success/10 text-success" },
   UPDATE: { label: "Atualizou", color: "bg-primary/10 text-primary" },
+  UPDATE_STATUS: { label: "Status", color: "bg-primary/10 text-primary" },
   DELETE: { label: "Excluiu", color: "bg-destructive/10 text-destructive" },
   LOGIN: { label: "Login", color: "bg-warning/10 text-warning" },
 };

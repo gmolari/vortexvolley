@@ -9,6 +9,8 @@ import {
 } from "@/../drizzle/schema";
 import { eq, asc, and, inArray } from "drizzle-orm";
 import { slugify } from "@/lib/utils";
+import { createAuditLog } from "./audit-log.service";
+import { auth } from "@/lib/auth";
 
 export async function getSaleItems() {
   return db.query.saleItems.findMany({
@@ -81,6 +83,19 @@ export async function createSaleItem(data: {
       active: data.active ?? true,
     })
     .returning();
+
+  const session = await auth();
+  if (session?.user) {
+    createAuditLog({
+      userId: session.user.id,
+      username: session.user.name || "admin",
+      action: "CREATE",
+      entity: "sale_item",
+      entityId: item.id,
+      details: { name: data.name },
+    }).catch(() => {});
+  }
+
   return item;
 }
 
@@ -95,11 +110,35 @@ export async function updateSaleItem(id: string, data: Record<string, unknown>) 
     .set(values)
     .where(eq(saleItems.id, id))
     .returning();
+
+  const session = await auth();
+  if (session?.user) {
+    createAuditLog({
+      userId: session.user.id,
+      username: session.user.name || "admin",
+      action: "UPDATE",
+      entity: "sale_item",
+      entityId: id,
+      details: { changes: Object.keys(data) },
+    }).catch(() => {});
+  }
+
   return item;
 }
 
 export async function deleteSaleItem(id: string) {
   await db.delete(saleItems).where(eq(saleItems.id, id));
+
+  const session = await auth();
+  if (session?.user) {
+    createAuditLog({
+      userId: session.user.id,
+      username: session.user.name || "admin",
+      action: "DELETE",
+      entity: "sale_item",
+      entityId: id,
+    }).catch(() => {});
+  }
 }
 
 export async function addImage(saleItemId: string, url: string, alt: string | null, order: number) {

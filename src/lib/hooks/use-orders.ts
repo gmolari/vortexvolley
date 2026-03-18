@@ -5,6 +5,7 @@ import {
   getOrderById,
   getOrdersBySaleItem,
   updateOrderStatus,
+  deleteOrder,
   getOrdersForExport,
 } from "@/lib/services/order.service";
 import type { CreateOrderInput } from "@/lib/validators";
@@ -56,8 +57,16 @@ export function useCreateOrder() {
 export function useUpdateOrderStatus() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: "PENDING" | "CONFIRMED" | "CANCELLED" }) =>
+    mutationFn: ({ id, status }: { id: string; status: "PENDING" | "CONFIRMED" | "DELIVERED" | "CANCELLED" }) =>
       updateOrderStatus(id, status),
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEYS.all }),
+  });
+}
+
+export function useDeleteOrder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteOrder(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEYS.all }),
   });
 }

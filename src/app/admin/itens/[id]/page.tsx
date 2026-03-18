@@ -1,8 +1,10 @@
 "use client";
 
 import { use } from "react";
+import Link from "next/link";
+import { Eye } from "lucide-react";
 import { AdminHeader } from "@/components/layout";
-import { Tabs, TabsList, TabsTrigger, TabsContent, Spinner } from "@/components/ui";
+import { Tabs, TabsList, TabsTrigger, TabsContent, Spinner, Button } from "@/components/ui";
 import { useSaleItemById } from "@/lib/hooks";
 import { InfoTab } from "./components/info-tab";
 import { ImagesTab } from "./components/images-tab";
@@ -39,6 +41,11 @@ export default function EditItemPage({ params }: Props) {
     <>
       <AdminHeader title={item.name} />
       <div className="p-6">
+        <div className="mb-4 flex justify-end">
+          <Link href={`/admin/itens/${id}/preview`} target="_blank">
+            <Button variant="outline"><Eye className="mr-2 h-4 w-4" /> Preview</Button>
+          </Link>
+        </div>
         <Tabs defaultValue="info">
           <TabsList>
             <TabsTrigger value="info">Informações</TabsTrigger>

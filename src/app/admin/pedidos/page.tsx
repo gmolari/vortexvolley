@@ -13,6 +13,7 @@ import * as XLSX from "xlsx";
 const statusMap: Record<string, { label: string; classes: string }> = {
   PENDING: { label: "Pendente", classes: "bg-warning/10 text-warning" },
   CONFIRMED: { label: "Confirmado", classes: "bg-success/10 text-success" },
+  DELIVERED: { label: "Entregue", classes: "bg-primary/10 text-primary" },
   CANCELLED: { label: "Cancelado", classes: "bg-destructive/10 text-destructive" },
 };
 
@@ -61,6 +62,7 @@ export default function PedidosPage() {
             <option value="">Todos os status</option>
             <option value="PENDING">Pendente</option>
             <option value="CONFIRMED">Confirmado</option>
+            <option value="DELIVERED">Entregue</option>
             <option value="CANCELLED">Cancelado</option>
           </select>
           <Button variant="outline" onClick={handleExport}>

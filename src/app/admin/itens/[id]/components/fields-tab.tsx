@@ -21,10 +21,18 @@ export function FieldsTab({ item }: { item: any }) {
   const type = watch("type");
 
   const addOption = () => {
-    if (!optLabel || !optValue) return;
-    setOptions([...options, { label: optLabel, value: optValue }]);
+    if (!optLabel) return;
+    const val = optValue || optLabel;
+    setOptions([...options, { label: optLabel, value: val }]);
     setOptLabel("");
     setOptValue("");
+  };
+
+  const handleOptionKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addOption();
+    }
   };
 
   const onSubmit = async (data: any) => {
@@ -116,10 +124,11 @@ export function FieldsTab({ item }: { item: any }) {
                   </div>
                 ))}
                 <div className="flex gap-2">
-                  <Input value={optLabel} onChange={(e) => setOptLabel(e.target.value)} placeholder="Label" className="flex-1" />
-                  <Input value={optValue} onChange={(e) => setOptValue(e.target.value)} placeholder="Valor" className="flex-1" />
+                  <Input value={optLabel} onChange={(e) => setOptLabel(e.target.value)} onKeyDown={handleOptionKeyDown} placeholder="Label (ex: P, M, G)" className="flex-1" />
+                  <Input value={optValue} onChange={(e) => setOptValue(e.target.value)} onKeyDown={handleOptionKeyDown} placeholder="Valor (auto se vazio)" className="flex-1" />
                   <Button type="button" variant="ghost" size="sm" onClick={addOption}>+</Button>
                 </div>
+                <p className="text-xs text-muted-foreground">Pressione Enter para adicionar rapidamente. O valor é preenchido automaticamente se deixado vazio.</p>
               </div>
             )}
 
