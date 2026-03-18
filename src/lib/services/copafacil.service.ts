@@ -1,129 +1,128 @@
-import type { Championship } from "@/types/copafacil";
+import { env } from "../../../config/env";
+import { getVisibleTournaments } from "./tournament.service";
+import type {
+  Tournament,
+  TournamentData,
+  CopafacilStage,
+  CopafacilRound,
+  CopafacilMatch,
+  CopafacilClassification,
+} from "@/types/copafacil";
 
-// TODO: Connect to real CopFacil API when Professional plan is available.
-// The CopFacil JSON API requires a Professional plan subscription.
-// Base URL: https://copafacil.com
-// Endpoint examples:
-//   GET /json/championships - List championships
-//   GET /json/championships/:id/events - List events for a championship
+const BASE_URL = "https://copafacil.com/api2";
 
-const COPAFACIL_BASE_URL = "https://copafacil.com";
+async function copafacilFetch<T>(path: string): Promise<T | null> {
+  const apiKey = env.COPAFACIL_API_KEY;
+  if (!apiKey) return null;
 
-const mockChampionships: Championship[] = [
-  {
-    id: "1",
-    name: "Copa Londrina de Volei 2025",
-    status: "active",
-    sport: "Voleibol",
-    startDate: "2025-06-15",
-    endDate: "2025-08-20",
-    teamsCount: 12,
-  },
-  {
-    id: "2",
-    name: "Torneio Regional Norte do Parana",
-    status: "upcoming",
-    sport: "Voleibol",
-    startDate: "2025-09-10",
-    teamsCount: 8,
-  },
-  {
-    id: "3",
-    name: "Liga Amadora de Volei - 1o Semestre",
-    status: "finished",
-    sport: "Voleibol",
-    startDate: "2025-02-01",
-    endDate: "2025-05-30",
-    teamsCount: 16,
-  },
-  {
-    id: "4",
-    name: "Copa Integracao Voleibol",
-    status: "upcoming",
-    sport: "Voleibol",
-    startDate: "2025-10-05",
-    teamsCount: 10,
-  },
-];
-
-interface UpcomingEvent {
-  id: string;
-  championshipId: string;
-  championshipName: string;
-  date: string;
-  time: string;
-  location: string;
-  teamA: string;
-  teamB: string;
-}
-
-const mockUpcomingEvents: UpcomingEvent[] = [
-  {
-    id: "e1",
-    championshipId: "1",
-    championshipName: "Copa Londrina de Volei 2025",
-    date: "2025-07-12",
-    time: "19:00",
-    location: "Ginasio Moringao",
-    teamA: "Vortex Volley",
-    teamB: "Londrina Volei Clube",
-  },
-  {
-    id: "e2",
-    championshipId: "1",
-    championshipName: "Copa Londrina de Volei 2025",
-    date: "2025-07-19",
-    time: "15:00",
-    location: "Ginasio Moringao",
-    teamA: "Cambe Volei",
-    teamB: "Vortex Volley",
-  },
-  {
-    id: "e3",
-    championshipId: "2",
-    championshipName: "Torneio Regional Norte do Parana",
-    date: "2025-09-10",
-    time: "18:00",
-    location: "Ginasio Municipal de Maringa",
-    teamA: "Vortex Volley",
-    teamB: "Maringa Volei",
-  },
-];
-
-export async function getChampionships(): Promise<Championship[]> {
-  // TODO: Replace with real CopFacil API when Professional plan is available
-  // const res = await fetch(`${COPAFACIL_BASE_URL}/json/championships`, {
-  //   next: { revalidate: 600 },
-  // });
-  // if (!res.ok) throw new Error("CopFacil API error");
-  // return res.json();
   try {
-    return mockChampionships;
+    const res = await fetch(`${BASE_URL}${path}`, {
+      headers: {
+        "x-api-key": apiKey,
+        lang: "pt",
+        gmt: "-3",
+      },
+      next: { revalidate: 600 },
+    });
+
+    if (!res.ok) return null;
+    return res.json();
   } catch {
-    return mockChampionships;
+    return null;
   }
 }
 
-export async function getUpcomingEvents(): Promise<UpcomingEvent[]> {
-  // TODO: Replace with real CopFacil API
-  // const res = await fetch(`${COPAFACIL_BASE_URL}/json/events?upcoming=true`, {
-  //   next: { revalidate: 300 },
-  // });
-  // if (!res.ok) throw new Error("CopFacil API error");
-  // return res.json();
-  try {
-    return mockUpcomingEvents;
-  } catch {
-    return mockUpcomingEvents;
+// --- Individual API calls ---
+
+export async function getStages(tournamentId: string): Promise<CopafacilStage[]> {
+  const data = await copafacilFetch<CopafacilStage[]>(`/tournament/${tournamentId}/stages`);
+  return data || [];
+}
+
+export async function getClassification(
+  tournamentId: string,
+  stageId: string
+): Promise<CopafacilClassification | null> {
+  return copafacilFetch<CopafacilClassification>(
+    `/tournament/${tournamentId}/stages/${stageId}/table`
+  );
+}
+
+export async function getRounds(
+  tournamentId: string,
+  stageId: string
+): Promise<CopafacilRound[]> {
+  const data = await copafacilFetch<CopafacilRound[]>(
+    `/tournament/${tournamentId}/stages/${stageId}/rounds`
+  );
+  return data || [];
+}
+
+export async function getMatches(
+  tournamentId: string,
+  stageId: string,
+  roundId: string
+): Promise<CopafacilMatch[]> {
+  const data = await copafacilFetch<CopafacilMatch[]>(
+    `/tournament/${tournamentId}/stages/${stageId}/rounds/${roundId}/matchs`
+  );
+  return data || [];
+}
+
+export async function getTeams(
+  tournamentId: string
+): Promise<{ teams: { name: string }[]; header: { key: string; title: string }[] } | null> {
+  return copafacilFetch(`/tournament/${tournamentId}/teams`);
+}
+
+// --- Aggregated data for landing page ---
+
+export async function getTournamentData(tournament: Tournament): Promise<TournamentData> {
+  const stages = await getStages(tournament.copafacilId);
+
+  let classification: CopafacilClassification | null = null;
+  let recentMatches: CopafacilMatch[] = [];
+
+  // Get classification from the first round-robin stage (league table)
+  const roundRobinStage = stages.find((s) => s.round_robin);
+  const firstStage = roundRobinStage || stages[0];
+
+  if (firstStage) {
+    classification = await getClassification(tournament.copafacilId, firstStage.id);
+
+    // Get rounds and fetch matches from the most recent round
+    const rounds = await getRounds(tournament.copafacilId, firstStage.id);
+    if (rounds.length > 0) {
+      // Try the last round first (most recent matches)
+      const lastRound = rounds[rounds.length - 1];
+      recentMatches = await getMatches(
+        tournament.copafacilId,
+        firstStage.id,
+        lastRound.id
+      );
+    }
   }
+
+  // Get teams count
+  const teamsData = await getTeams(tournament.copafacilId);
+  const teamsCount = teamsData?.teams?.length || classification?.teams?.length || 0;
+
+  return {
+    tournament,
+    stages,
+    classification,
+    recentMatches,
+    teamsCount,
+  };
 }
 
-export async function getActiveChampionships(): Promise<Championship[]> {
-  const all = await getChampionships();
-  return all.filter((c) => c.status === "active");
-}
+export async function getAllTournamentsData(): Promise<TournamentData[]> {
+  const tournaments = await getVisibleTournaments();
+  if (tournaments.length === 0) return [];
 
-export async function getUpcomingChampionships(): Promise<Championship[]> {
-  const all = await getChampionships();
-  return all.filter((c) => c.status === "upcoming");
+  const results = await Promise.all(
+    tournaments.map((t) => getTournamentData(t).catch(() => null))
+  );
+
+  return results.filter((r): r is TournamentData => r !== null);
 }

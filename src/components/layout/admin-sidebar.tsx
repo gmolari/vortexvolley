@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ScrollText,
+  Trophy,
   ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -23,6 +24,7 @@ const navItems = [
   { label: "Landing Page", href: "/admin/landing", icon: Layout },
   { label: "Itens", href: "/admin/itens", icon: ShoppingBag },
   { label: "Pedidos", href: "/admin/pedidos", icon: ClipboardList },
+  // { label: "Campeonatos", href: "/admin/campeonatos", icon: Trophy }, // Desativado: API CopFacil não lista torneios automaticamente
   { label: "Logs", href: "/admin/logs", icon: ScrollText },
   { label: "Configurações", href: "/admin/configuracoes", icon: Settings },
 ];
