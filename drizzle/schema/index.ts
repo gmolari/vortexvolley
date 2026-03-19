@@ -18,3 +18,4 @@ export * from "./order-value";
 export * from "./site-settings";
 export * from "./audit-log";
 export * from "./tournament";
+export * from "./copafacil-log";

@@ -1,4 +1,5 @@
-import { Trophy, Users, Swords } from "lucide-react";
+import Link from "next/link";
+import { Trophy, Users, Swords, ChevronRight } from "lucide-react";
 import { SectionWrapper } from "../section-wrapper";
 import type { TournamentData, CopafacilMatch } from "@/types/copafacil";
 
@@ -22,7 +23,7 @@ function MatchCard({ match }: { match: CopafacilMatch }) {
   );
 }
 
-function ClassificationTable({ data }: { data: TournamentData }) {
+function ClassificationPreview({ data }: { data: TournamentData }) {
   const { classification } = data;
   if (!classification || classification.teams.length === 0) return null;
 
@@ -37,7 +38,11 @@ function ClassificationTable({ data }: { data: TournamentData }) {
             <th className="py-2 pr-2 font-medium">#</th>
             <th className="py-2 pr-4 font-medium">Equipe</th>
             {headers.map((h) => (
-              <th key={h.cod} className="py-2 px-2 font-medium text-center" title={h.title1}>
+              <th
+                key={h.cod}
+                className="py-2 px-2 font-medium text-center"
+                title={h.title1}
+              >
                 {h.title2}
               </th>
             ))}
@@ -45,13 +50,21 @@ function ClassificationTable({ data }: { data: TournamentData }) {
         </thead>
         <tbody>
           {top5.map((team) => (
-            <tr key={team.id} className="border-b border-border/50 last:border-0">
-              <td className="py-2 pr-2 text-muted-foreground">{team.position}</td>
+            <tr
+              key={team.id}
+              className="border-b border-border/50 last:border-0"
+            >
+              <td className="py-2 pr-2 text-muted-foreground">
+                {team.position}
+              </td>
               <td className="py-2 pr-4 font-medium text-foreground truncate max-w-[160px]">
                 {team.name}
               </td>
               {team.tableData.slice(0, 6).map((d, i) => (
-                <td key={i} className="py-2 px-2 text-center text-muted-foreground">
+                <td
+                  key={i}
+                  className="py-2 px-2 text-center text-muted-foreground"
+                >
                   {d.value}
                 </td>
               ))}
@@ -63,22 +76,27 @@ function ClassificationTable({ data }: { data: TournamentData }) {
   );
 }
 
-export function ChampionshipsSection({ tournamentsData }: ChampionshipsSectionProps) {
+export function ChampionshipsSection({
+  tournamentsData,
+}: ChampionshipsSectionProps) {
   if (tournamentsData.length === 0) return null;
 
   return (
     <SectionWrapper id="campeonatos" title="Campeonatos" className="bg-muted/30">
       <div className="space-y-8">
         {tournamentsData.map((data) => (
-          <div
+          <Link
             key={data.tournament.id}
-            className="rounded-xl border border-border/50 bg-card overflow-hidden"
+            href={`/campeonatos/${data.tournament.id}`}
+            className="group block rounded-xl border border-border/50 bg-card overflow-hidden transition-shadow hover:shadow-lg hover:border-border"
           >
             {/* Header */}
             <div className="flex items-center gap-3 border-b border-border p-5">
               <Trophy className="h-5 w-5 text-primary shrink-0" />
               <div className="flex-1">
-                <h3 className="font-semibold text-foreground">{data.tournament.name}</h3>
+                <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                  {data.tournament.name}
+                </h3>
                 <div className="mt-1 flex items-center gap-4 text-sm text-muted-foreground">
                   {data.teamsCount > 0 && (
                     <span className="flex items-center gap-1">
@@ -87,20 +105,27 @@ export function ChampionshipsSection({ tournamentsData }: ChampionshipsSectionPr
                     </span>
                   )}
                   {data.stages.length > 0 && (
-                    <span>{data.stages.length} fase{data.stages.length > 1 ? "s" : ""}</span>
+                    <span>
+                      {data.stages.length} fase
+                      {data.stages.length > 1 ? "s" : ""}
+                    </span>
                   )}
                 </div>
               </div>
+              <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
 
             <div className="p-5 space-y-6">
               {/* Classification */}
-              {data.classification && data.classification.teams.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-3">Classificação</h4>
-                  <ClassificationTable data={data} />
-                </div>
-              )}
+              {data.classification &&
+                data.classification.teams.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground mb-3">
+                      Classificação
+                    </h4>
+                    <ClassificationPreview data={data} />
+                  </div>
+                )}
 
               {/* Recent Matches */}
               {data.recentMatches.length > 0 && (
@@ -124,8 +149,19 @@ export function ChampionshipsSection({ tournamentsData }: ChampionshipsSectionPr
                 </p>
               )}
             </div>
-          </div>
+          </Link>
         ))}
+      </div>
+
+      {/* Link to full page */}
+      <div className="mt-8 text-center">
+        <Link
+          href="/campeonatos"
+          className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+        >
+          Ver todos os campeonatos
+          <ChevronRight className="h-4 w-4" />
+        </Link>
       </div>
     </SectionWrapper>
   );

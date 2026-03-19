@@ -50,31 +50,19 @@ export interface CopafacilClassification {
   teams: CopafacilTableTeam[];
 }
 
-export interface CopafacilTeam {
-  name: string;
-  [key: string]: unknown;
+// Round with matches loaded
+export interface RoundWithMatches extends CopafacilRound {
+  matches: CopafacilMatch[];
 }
 
-export interface CopafacilRanking {
-  id: string;
-  title1: string;
-  title2: string;
-  headers: string[];
+// Full stage data (classification + all rounds with matches)
+export interface StageData {
+  stage: CopafacilStage;
+  classification: CopafacilClassification | null;
+  rounds: RoundWithMatches[];
 }
 
-export interface CopafacilPlayer {
-  name: string;
-  nickName: string;
-  position: number;
-  photo: string | null;
-  teamName: string;
-  teamId: string;
-  teamPhoto: string;
-  playerId: string;
-  data: string[];
-}
-
-// Aggregated data for display
+// Aggregated data for homepage summary
 export interface TournamentData {
   tournament: Tournament;
   stages: CopafacilStage[];
@@ -83,13 +71,9 @@ export interface TournamentData {
   teamsCount: number;
 }
 
-// Keep backward compat for any old references
-export interface Championship {
-  id: string;
-  name: string;
-  status: "active" | "finished" | "upcoming";
-  sport: string;
-  startDate: string;
-  endDate?: string;
+// Full detail data for individual tournament page
+export interface TournamentDetailData {
+  tournament: Tournament;
+  stagesData: StageData[];
   teamsCount: number;
 }
